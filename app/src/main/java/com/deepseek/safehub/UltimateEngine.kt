@@ -4,6 +4,7 @@ import java.io.File
 import java.util.UUID
 import java.net.HttpURLConnection
 import java.net.URL
+import org.json.JSONObject
 
 object UltimateEngine {
     var officialClient: Any? = null
@@ -11,7 +12,6 @@ object UltimateEngine {
     private const val WORK_DIR = "/sdcard/DeepSeekAgent"
     private var lastRequestTime = 0L
 
-    // 暴力提取本地 Token
     private fun tryGetLocalToken() {
         if (authHeader != null) return
         try {
@@ -22,9 +22,7 @@ object UltimateEngine {
                         val content = file.readText()
                         val regex = Regex("Bearer [a-zA-Z0-9-_.]+")
                         val match = regex.find(content)
-                        if (match != null) {
-                            authHeader = match.value
-                        }
+                        if (match != null) authHeader = match.value
                     }
                 }
             }
@@ -33,20 +31,16 @@ object UltimateEngine {
 
     fun askAI(sessionId: String, prompt: String, onLog: (String) -> Unit): String {
         tryGetLocalToken()
-        
         if (authHeader == null) {
-            onLog("❌ 仍未获取到账号 Token，请随便发条消息后重试！")
+            onLog("❌ 未获取到账号 Token，请随便发条消息激活！")
             return ""
         }
 
         val now = System.currentTimeMillis()
-        if (now - lastRequestTime < 3000) {
-            Thread.sleep(3000)
-        }
+        if (now - lastRequestTime < 3000) Thread.sleep(3000)
         lastRequestTime = System.currentTimeMillis()
 
         return try {
-            // 自己建网络通道，不再借用它的！
             val url = URL("https://chat.deepseek.com/api/v0/chat/completion")
             val conn = url.openConnection() as HttpURLConnection
             conn.requestMethod = "POST"
@@ -63,7 +57,6 @@ object UltimateEngine {
                 return ""
             }
 
-            // 简易提取流式返回
             val reader = conn.inputStream.bufferedReader()
             val sb = StringBuilder()
             var line: String?
@@ -72,7 +65,7 @@ object UltimateEngine {
                     val data = line.substring(6)
                     if (data != "[DONE]") {
                         try {
-                            val json = org.json.JSONObject(data)
+                            val json = JSONObject(data)
                             val content = json.optJSONObject("v")?.optString("content") ?: ""
                             sb.append(content)
                         } catch (_: Throwable) {}

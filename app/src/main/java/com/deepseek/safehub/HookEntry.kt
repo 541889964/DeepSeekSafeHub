@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.os.Bundle
 import android.view.Gravity
 import android.widget.*
 import de.robv.android.xposed.IXposedHookLoadPackage
@@ -13,12 +14,11 @@ import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 
 class HookEntry : IXposedHookLoadPackage {
-
     override fun handleLoadPackage(lpparam: LoadPackageParam) {
         if (lpparam.packageName != "com.deepseek.chat") return
         XposedBridge.log("====== DeepSeek 安全中枢已注入！ ======")
 
-        // 劫持网络通道
+        // 1. 劫持网络通道 (尝试)
         try {
             val clientClass = XposedHelpers.findClass("okhttp3.OkHttpClient", lpparam.classLoader)
             val reqClass = XposedHelpers.findClass("okhttp3.Request", lpparam.classLoader)
@@ -34,25 +34,22 @@ class HookEntry : IXposedHookLoadPackage {
                     }
                 }
             })
-        } catch (t: Throwable) {}
+        } catch (_: Throwable) {}
 
-        // 改用 onResume，此时 UI 已经完全渲染完毕
+        // 2. 注入 UI 悬浮窗
         try {
             XposedHelpers.findAndHookMethod("android.app.Activity", lpparam.classLoader, "onResume", object : XC_MethodHook() {
                 override fun afterHookedMethod(param: MethodHookParam) {
                     val activity = param.thisObject as? Activity
                     if (activity != null) {
-                        // 弹出一个提示，证明注入成功！
                         activity.runOnUiThread {
-                            Toast.makeText(activity, "⚡ 安全中枢注入成功！", Toast.LENGTH_SHORT).show()
+                            // 延迟一点点，等系统渲染完
                             activity.window?.decorView?.postDelayed({ injectUI(activity) }, 500)
                         }
                     }
                 }
             })
-        } catch (t: Throwable) {
-            XposedBridge.log("❌ UI Hook 失败: ${t.message}")
-        }
+        } catch (_: Throwable) {}
     }
 
     private fun injectUI(activity: Activity) {
@@ -71,7 +68,7 @@ class HookEntry : IXposedHookLoadPackage {
             }
             val lp = FrameLayout.LayoutParams(140, 140).apply { gravity = Gravity.BOTTOM or Gravity.END; setMargins(0, 0, 40, 300) }
             rootView.addView(fab, lp)
-        } catch (t: Throwable) {}
+        } catch (_: Throwable) {}
     }
 
     private fun showDialog(activity: Activity) {
