@@ -4,9 +4,13 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
-import android.os.Bundle
 import android.view.Gravity
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
@@ -18,7 +22,6 @@ class HookEntry : IXposedHookLoadPackage {
         if (lpparam.packageName != "com.deepseek.chat") return
         XposedBridge.log("====== DeepSeek 安全中枢已注入！ ======")
 
-        // 1. 劫持网络通道 (尝试)
         try {
             val clientClass = XposedHelpers.findClass("okhttp3.OkHttpClient", lpparam.classLoader)
             val reqClass = XposedHelpers.findClass("okhttp3.Request", lpparam.classLoader)
@@ -36,14 +39,12 @@ class HookEntry : IXposedHookLoadPackage {
             })
         } catch (_: Throwable) {}
 
-        // 2. 注入 UI 悬浮窗
         try {
             XposedHelpers.findAndHookMethod("android.app.Activity", lpparam.classLoader, "onResume", object : XC_MethodHook() {
                 override fun afterHookedMethod(param: MethodHookParam) {
                     val activity = param.thisObject as? Activity
                     if (activity != null) {
                         activity.runOnUiThread {
-                            // 延迟一点点，等系统渲染完
                             activity.window?.decorView?.postDelayed({ injectUI(activity) }, 500)
                         }
                     }
