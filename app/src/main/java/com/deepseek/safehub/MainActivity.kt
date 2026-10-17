@@ -14,9 +14,9 @@ class MainActivity : AppCompatActivity() {
         val tvStatus = findViewById<TextView>(R.id.tvStatus)
         val btnAction = findViewById<Button>(R.id.btnAction)
 
-        tvStatus.text = "环境就绪\n\n请确保已在 LSPosed 管理器中启用本模块，并勾选作用域 'DeepSeek'。\n\n完成后点击下方按钮启动。"
+        tvStatus.text = "DeepSeek 安全中枢\n\n请在 LSPosed 中勾选本模块并重启应用。\n点击下方按钮拉起 DeepSeek 开始工作。"
         
-        btnAction.text = "启动 DeepSeek 开启中枢"
+        btnAction.text = "启动 DeepSeek"
         btnAction.visibility = Button.VISIBLE
         
         btnAction.setOnClickListener {
@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
                 finish()
             } catch (e: Exception) {
-                tvStatus.text = "未检测到官方 DeepSeek App，请先安装。"
+                tvStatus.text = "启动失败：您似乎没有安装官方 DeepSeek。"
             }
         }
     }
