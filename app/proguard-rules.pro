@@ -1,0 +1,2 @@
+-keep class com.deepseek.safehub.** { *; }
+-dontwarn io.github.libxposed.**
