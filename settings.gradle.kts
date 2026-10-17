@@ -2,8 +2,9 @@ pluginManagement {
     repositories { google(); mavenCentral(); gradlePluginPortal() }
 }
 dependencyResolutionManagement {
+    repositories { maven { url = uri("https://api.xposed.info/") } }
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories { google(); mavenCentral() }
+    repositories { google(); mavenCentral(); maven { url = uri("https://api.xposed.info/") } }
 }
 rootProject.name = "DeepSeekSafeHub"
 include(":app")
