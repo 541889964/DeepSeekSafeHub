@@ -9,8 +9,7 @@
             </intent-filter>
         </activity>
         <meta-data android:name="xposedmodule" android:value="true" />
-        <meta-data android:name="xposeddescription" android:value="防封号全自动中枢" />
-        <meta-data android:name="xposedminversion" android:value="102" />
-        <meta-data android:name="xposedscope" android:value="com.deepseek.chat" />
+        <meta-data android:name="xposeddescription" android:value="DeepSeek 全自动中枢" />
+        <meta-data android:name="xposedminversion" android:value="82" />
     </application>
 </manifest>
